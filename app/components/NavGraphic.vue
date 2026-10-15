@@ -1,71 +1,98 @@
 <script setup lang="ts">
-defineProps<{
-  variant?: 'top' | 'bottom'
-}>()
+const props = defineProps<{
+  variant?: "top" | "bottom";
+}>();
 
 const morse: Record<string, string> = {
-  A: '.-',
-  B: '-...',
-  C: '-.-.',
-  D: '-..',
-  E: '.',
-  F: '..-.',
-  G: '--.',
-  H: '....',
-  I: '..',
-  J: '.---',
-  K: '-.-',
-  L: '.-..',
-  M: '--',
-  N: '-.',
-  O: '---',
-  P: '.--.',
-  Q: '--.-',
-  R: '.-.',
-  S: '...',
-  T: '-',
-  U: '..-',
-  V: '...-',
-  W: '.--',
-  X: '-..-',
-  Y: '-.--',
-  Z: '--..'
-}
+  A: ".-",
+  B: "-...",
+  C: "-.-.",
+  D: "-..",
+  E: ".",
+  F: "..-.",
+  G: "--.",
+  H: "....",
+  I: "..",
+  J: ".---",
+  K: "-.-",
+  L: ".-..",
+  M: "--",
+  N: "-.",
+  O: "---",
+  P: ".--.",
+  Q: "--.-",
+  R: ".-.",
+  S: "...",
+  T: "-",
+  U: "..-",
+  V: "...-",
+  W: ".--",
+  X: "-..-",
+  Y: "-.--",
+  Z: "--..",
+};
 
-const phrase = 'You create, hence you are alive'
-const unit = 4
-const tones = ['heat', 'aqua', 'lilac', 'mint'] as const
+const phrases = {
+  top: "Move fast, fail faster",
+  bottom: "You create, hence you are alive",
+} as const;
 
-const signal = computed(() => {
-  const marks: { kind: 'dot' | 'dash'; x: number; w: number; tone: (typeof tones)[number] }[] = []
-  let x = unit * 2
-  const words = phrase.toUpperCase().replace(/[^A-Z ]/g, '').split(/\s+/).filter(Boolean)
+const unit = 4;
+const tones = ["heat", "aqua", "lilac", "mint"] as const;
+
+function encode(text: string) {
+  const marks: {
+    kind: "dot" | "dash";
+    x: number;
+    w: number;
+    tone: (typeof tones)[number];
+  }[] = [];
+  let x = unit * 2;
+  const words = text
+    .toUpperCase()
+    .replace(/[^A-Z ]/g, "")
+    .split(/\s+/)
+    .filter(Boolean);
 
   words.forEach((word, wordIndex) => {
-    ;[...word].forEach((letter, letterIndex) => {
-      const code = morse[letter] ?? ''
-      ;[...code].forEach((symbol, symbolIndex) => {
-        const w = symbol === '.' ? unit : unit * 3
+    [...word].forEach((letter, letterIndex) => {
+      const code = morse[letter] ?? "";
+      [...code].forEach((symbol, symbolIndex) => {
+        const w = symbol === "." ? unit : unit * 3;
         marks.push({
-          kind: symbol === '.' ? 'dot' : 'dash',
+          kind: symbol === "." ? "dot" : "dash",
           x,
           w,
-          tone: tones[marks.length % tones.length]
-        })
-        x += w
-        if (symbolIndex < code.length - 1) x += unit
-      })
-      if (letterIndex < word.length - 1) x += unit * 3
-    })
-    if (wordIndex < words.length - 1) x += unit * 7
-  })
+          tone: tones[marks.length % tones.length],
+        });
+        x += w;
+        if (symbolIndex < code.length - 1) x += unit;
+      });
+      if (letterIndex < word.length - 1) x += unit * 3;
+    });
+    if (wordIndex < words.length - 1) x += unit * 7;
+  });
 
-  return { marks, width: x + unit * 2 }
-})
+  return { marks, width: x + unit * 2 };
+}
+
+const phrase = computed(() =>
+  props.variant === "bottom" ? phrases.bottom : phrases.top,
+);
+const signal = computed(() => encode(phrase.value));
+const captionScale = computed(() => 420 / signal.value.width);
 </script>
 
 <template>
-  <svg v-if="variant !== 'bottom'" class="graphic" viewBox="0 0 420 36" preserveAspectRatio="xMaxYMid meet" aria-hidden="true">
+  <svg
+    v-if="variant !== 'bottom'"
+    class="graphic graphic-top"
+    viewBox="0 0 420 52"
+    preserveAspectRatio="xMaxYMid meet"
+    role="img"
+    :aria-label="phrase"
+  >
+    <title>{{ phrase }}</title>
     <path class="line" d="M8 18h404" />
     <circle class="heat mark" cx="36" cy="18" r="6" />
     <circle class="node mark" cx="92" cy="18" r="3.5" />
@@ -73,7 +100,31 @@ const signal = computed(() => {
     <path class="stroke" d="M168 8v20M188 8v20M168 18h20" />
     <circle class="lilac mark" cx="248" cy="18" r="8" />
     <path class="mint stroke" d="M276 18h88" />
-    <circle class="mint" cx="380" cy="18" r="5" />
+    <circle class="mint mark" cx="380" cy="18" r="5" />
+    <g class="caption" :transform="`translate(0 34) scale(${captionScale})`">
+      <template v-for="(mark, index) in signal.marks" :key="index">
+        <circle
+          v-if="mark.kind === 'dot'"
+          class="morse"
+          :class="[mark.tone, { flip: index % 2 === 1 }]"
+          :cx="mark.x + mark.w / 2"
+          cy="18"
+          :r="mark.w / 2"
+          :style="{ '--i': index }"
+        />
+        <rect
+          v-else
+          class="morse"
+          :class="[mark.tone, { flip: index % 2 === 1 }]"
+          :x="mark.x"
+          y="15.8"
+          :width="mark.w"
+          height="4.4"
+          rx="2.2"
+          :style="{ '--i': index }"
+        />
+      </template>
+    </g>
   </svg>
 
   <svg
@@ -121,6 +172,10 @@ const signal = computed(() => {
   fill: none;
 }
 
+.graphic-top {
+  height: 2.55rem;
+}
+
 .graphic-bottom {
   height: 2.75rem;
 }
@@ -158,48 +213,52 @@ const signal = computed(() => {
   transform-origin: center;
 }
 
-.graphic:hover .line {
+.graphic-top:hover .line {
   stroke-dasharray: 22 14;
-  animation: travel 0.7s linear infinite, pulse 1.1s ease-in-out infinite;
+  animation:
+    travel 2.8s linear infinite,
+    pulse 2.5s ease-in-out infinite;
 }
 
-.graphic:hover .stroke {
+.graphic-top:hover .stroke {
   stroke-dasharray: 10 8;
-  animation: travel 0.45s linear infinite;
+  animation: travel 2.2s linear infinite;
 }
 
-.graphic:hover .heat,
-.graphic:hover .lilac {
-  animation: bounce 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+.graphic-top:hover .mark.heat,
+.graphic-top:hover .mark.lilac {
+  animation: drift 2.6s ease-in-out infinite;
 }
 
-.graphic:hover .aqua,
-.graphic:hover circle.mint,
-.graphic:hover .node {
-  animation: bounce-alt 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+.graphic-top:hover .mark.aqua,
+.graphic-top:hover circle.mark.mint,
+.graphic-top:hover .mark.node {
+  animation: drift-alt 2.6s ease-in-out infinite;
 }
 
-.graphic:hover .aqua {
-  animation-delay: 0.12s;
+.graphic-top:hover .mark.aqua {
+  animation-delay: 0.35s;
 }
 
-.graphic:hover .lilac {
+.graphic-top:hover .mark.lilac {
+  animation-delay: 0.7s;
+}
+
+.graphic-top:hover circle.mark.mint {
+  animation-delay: 1s;
+}
+
+.graphic-top:hover .mark.node {
   animation-delay: 0.22s;
 }
 
-.graphic:hover circle.mint {
-  animation-delay: 0.34s;
-}
-
-.graphic:hover .node {
-  animation-delay: 0.08s;
-}
-
+.graphic-top:hover .morse,
 .graphic-bottom:hover .morse {
-  animation: wave 0.9s cubic-bezier(0.34, 1.45, 0.64, 1) infinite;
-  animation-delay: calc(var(--i) * 28ms);
+  animation: wave 2.5s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 64ms);
 }
 
+.graphic-top:hover .morse.flip,
 .graphic-bottom:hover .morse.flip {
   animation-name: wave-flip;
 }
@@ -228,41 +287,25 @@ circle.mint {
   stroke: none;
 }
 
-@keyframes bounce {
+@keyframes drift {
   0%,
   100% {
     transform: translate(0, 0) scale(1) rotate(0deg);
   }
 
-  25% {
-    transform: translate(14px, -8px) scale(1.28) rotate(16deg);
-  }
-
   50% {
-    transform: translate(-8px, 8px) scale(0.82) rotate(-12deg);
-  }
-
-  75% {
-    transform: translate(8px, -4px) scale(1.14) rotate(8deg);
+    transform: translate(4px, -3px) scale(1.06) rotate(4deg);
   }
 }
 
-@keyframes bounce-alt {
+@keyframes drift-alt {
   0%,
   100% {
     transform: translate(0, 0) scale(1) rotate(0deg);
   }
 
-  25% {
-    transform: translate(-14px, 8px) scale(0.8) rotate(-16deg);
-  }
-
   50% {
-    transform: translate(8px, -8px) scale(1.3) rotate(12deg);
-  }
-
-  75% {
-    transform: translate(-6px, 4px) scale(0.9) rotate(-8deg);
+    transform: translate(-4px, 3px) scale(0.96) rotate(-4deg);
   }
 }
 
@@ -275,30 +318,22 @@ circle.mint {
 @keyframes wave {
   0%,
   100% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
+    transform: translateY(0) scale(1);
   }
 
-  30% {
-    transform: translate(2px, -6px) scale(1.35) rotate(14deg);
-  }
-
-  65% {
-    transform: translate(-2px, 4px) scale(0.82) rotate(-10deg);
+  50% {
+    transform: translateY(-2.5px) scale(1.08);
   }
 }
 
 @keyframes wave-flip {
   0%,
   100% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
+    transform: translateY(0) scale(1);
   }
 
-  30% {
-    transform: translate(-2px, 6px) scale(0.82) rotate(-14deg);
-  }
-
-  65% {
-    transform: translate(2px, -5px) scale(1.35) rotate(10deg);
+  50% {
+    transform: translateY(2.5px) scale(0.94);
   }
 }
 
@@ -309,14 +344,15 @@ circle.mint {
   }
 
   50% {
-    opacity: 0.45;
+    opacity: 0.62;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .graphic:hover .line,
-  .graphic:hover .stroke,
-  .graphic:hover .mark,
+  .graphic-top:hover .line,
+  .graphic-top:hover .stroke,
+  .graphic-top:hover .mark,
+  .graphic-top:hover .morse,
   .graphic-bottom:hover .morse {
     animation: none;
   }
