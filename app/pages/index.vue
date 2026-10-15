@@ -200,7 +200,6 @@ const sections = categoryLandings.map((item) => {
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.7rem;
   align-items: stretch;
-  min-height: 36rem;
   margin: 0 0.75rem 1rem;
   padding: 1.1rem 0.7rem;
   border: 1px solid rgb(239 234 224 / 28%);
@@ -252,19 +251,19 @@ const sections = categoryLandings.map((item) => {
 }
 
 .strips {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 0.55rem;
   min-width: 0;
 }
 
 .strip {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
   min-width: 0;
-  min-height: 100%;
-  padding: 0.75rem 0.6rem 0.85rem;
+  padding: 0.7rem 0.9rem;
   color: inherit;
   text-decoration: none;
 }
@@ -285,6 +284,11 @@ const sections = categoryLandings.map((item) => {
   text-transform: uppercase;
 }
 
+.strip header {
+  flex: 0 0 10.5rem;
+  min-width: 0;
+}
+
 .name {
   font-size: 0.78rem;
   line-height: 1.1;
@@ -300,9 +304,9 @@ const sections = categoryLandings.map((item) => {
 }
 
 .chart {
-  width: 100%;
-  height: auto;
-  margin-top: 0.4rem;
+  flex: 0 0 auto;
+  width: 5.25rem;
+  height: 5.25rem;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.4;
@@ -392,15 +396,18 @@ const sections = categoryLandings.map((item) => {
 }
 
 .tally {
+  flex: 0 0 auto;
   margin: 0;
   font-size: 0.68rem;
   letter-spacing: 0.12em;
 }
 
 .index {
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
-  padding: 0.55rem 0 0;
-  border-top: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+  padding: 0 0 0 0.9rem;
+  border-left: 1px solid color-mix(in srgb, currentColor 35%, transparent);
   list-style: none;
   font-size: 0.72rem;
   font-weight: 700;
@@ -414,9 +421,11 @@ const sections = categoryLandings.map((item) => {
 }
 
 .word {
-  margin-top: auto;
+  flex: 0 1 12rem;
+  margin-left: auto;
   font-size: clamp(1.15rem, 1.6vw, 1.7rem);
   line-height: 0.9;
+  text-align: right;
 }
 
 .strip.is-arch .name {
@@ -499,17 +508,24 @@ const sections = categoryLandings.map((item) => {
     text-align: right;
   }
 
-  .strips {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    padding-bottom: 0.4rem;
+  .strip {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.65rem 1rem;
   }
 
-  .strip {
-    flex: 0 0 13.5rem;
-    min-height: 34rem;
-    scroll-snap-align: start;
+  .strip header,
+  .word {
+    flex-basis: 100%;
+  }
+
+  .word {
+    margin-left: 0;
+    text-align: left;
+  }
+
+  .index {
+    padding-left: 0.75rem;
   }
 }
 </style>

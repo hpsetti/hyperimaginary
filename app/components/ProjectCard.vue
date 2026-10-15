@@ -17,8 +17,9 @@ defineProps<{
 <style scoped>
 .card {
   display: flex;
-  flex-direction: column;
-  min-height: 100%;
+  flex-direction: row;
+  align-items: center;
+  min-height: 4.75rem;
   border: 1px solid var(--line);
   background: var(--color-architectural-cream);
   color: var(--ink);
@@ -166,18 +167,19 @@ defineProps<{
 }
 
 .tag {
+  flex: 0 1 11rem;
+  min-width: 0;
   margin: 0;
-  padding: 0.85rem 1rem 0;
+  padding: 1rem 0 1rem 1rem;
+  line-height: 1.3;
   color: color-mix(in srgb, var(--ink) 62%, var(--color-architectural-cream));
   font-size: 0.75rem;
   transition: color 320ms var(--ease-out);
 }
 
 h3 {
-  display: grid;
-  flex: 1;
-  place-items: center;
-  min-height: 8.5rem;
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
   padding: 1rem;
   color: var(--ink);
@@ -185,22 +187,35 @@ h3 {
   font-weight: 800;
   letter-spacing: 0.04em;
   line-height: 1.05;
-  text-align: center;
+  text-align: left;
   text-transform: uppercase;
   transition: color 320ms var(--ease-out);
 }
 
 .more {
   display: grid;
-  justify-items: end;
-  margin-top: auto;
-  padding: 0.75rem 1rem;
-  border-top: 1px solid var(--line);
+  flex: 0 0 auto;
+  align-self: stretch;
+  place-items: center;
+  margin: 0;
+  padding: 0 1.15rem;
+  border-left: 1px solid var(--line);
   color: var(--ink);
-  text-align: right;
   transition:
     color 320ms var(--ease-out),
     border-color 320ms var(--ease-out);
+}
+
+@media (max-width: 640px) {
+  .tag {
+    flex-basis: 7.5rem;
+    padding-left: 0.85rem;
+  }
+
+  h3 {
+    padding: 0.85rem 0.5rem;
+    font-size: 1.15rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
